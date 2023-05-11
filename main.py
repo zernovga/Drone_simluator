@@ -4,6 +4,10 @@ from pygame.locals import *
 from OpenGL.GL import *
 from OpenGL.GLU import *
 
+from camera import Camera
+
+cam = Camera()
+
 cubeVertices = ((1,1,1),(1,1,-1),(1,-1,-1),(1,-1,1),(-1,1,1),(-1,-1,-1),(-1,-1,1),(-1,1,-1))
 cubeEdges = ((0,1),(0,3),(0,4),(1,2),(1,7),(2,5),(2,3),(3,6),(4,6),(4,7),(5,6),(5,7))
 cubeQuads = ((0,3,6,4),(2,5,6,3),(1,2,5,7),(1,0,4,7),(7,4,6,5),(2,3,0,1))
@@ -22,14 +26,49 @@ def solidCube():
             glVertex3fv(cubeVertices[cubeVertex])
     glEnd()
 
+def move_camera():
+    pressed_keys = pg.key.get_pressed()
+    x, y, z = 0.0, 0.0, 0.0
+    if pressed_keys[K_w]:
+        y += 0.1
+    if pressed_keys[K_s]:
+        y -= 0.1
+    if pressed_keys[K_d]:
+        x += 0.1
+    if pressed_keys[K_a]:
+        x -= 0.1
+    if pressed_keys[K_e]:
+        z += 0.1
+    if pressed_keys[K_q]:
+        z -= 0.1
+    glTranslatef(x, y, z)
+
+    if pressed_keys[K_KP_8]:
+        glRotatef(0.5, 1, 0, 0)
+    if pressed_keys[K_KP_2]:
+        glRotatef(-0.5, 1, 0, 0)
+    if pressed_keys[K_KP_4]:
+        glRotatef(-0.5, 0, 1, 0)
+    if pressed_keys[K_KP_6]:
+        glRotatef(0.5, 0, 1, 0)
+    if pressed_keys[K_KP_7]:
+        glRotatef(-0.5, 0, 0, 1)
+    if pressed_keys[K_KP_9]:
+        glRotatef(0.5, 0, 0, 1)
+
+    if pressed_keys[K_ESCAPE]:
+        pg.quit()
+        quit()
+
 def main():
     pg.init()
-    display = (1680, 1050)
+    display = (1280, 720)
     pg.display.set_mode(display, DOUBLEBUF|OPENGL)
 
     gluPerspective(45, (display[0]/display[1]), 0.1, 50.0)
 
-    glTranslatef(0.0, 0.0, -5)
+    glTranslatef(0.0, 0.0, -10.0)
+
 
     while True:
         for event in pg.event.get():
@@ -37,10 +76,26 @@ def main():
                 pg.quit()
                 quit()
 
-        glRotatef(1, 1, 1, 1)
+        # glRotatef(1, 1, 1, 1)
+        # move_camera()
+
+        keys_pressed = pg.key.get_pressed()
+            if keys_pressed[pg.K_a]:
+                cam.process_keyboard("LEFT", 0.08)
+            if keys_pressed[pg.K_d]:
+                cam.process_keyboard("RIGHT", 0.08)
+            if keys_pressed[pg.K_w]:
+                cam.process_keyboard("FORWARD", 0.08)
+            if keys_pressed[pg.K_s]:
+                cam.process_keyboard("BACKWARD", 0.08)
+
         glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT)
-        solidCube()
-        #wireCube()
+
+        view = cam.get_view_matrix()
+        glUniformMatrix4fv(view_loc, 1, GL_FALSE, view)
+        
+        # solidCube()
+        wireCube()
         pg.display.flip()
         pg.time.wait(10)
 
