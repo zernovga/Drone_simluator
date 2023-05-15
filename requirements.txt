@@ -1,3 +1,8 @@
 pygame
+pyrr
 PyOpenGL 
 PyOpenGL_accelerate
+numpy
+glfw
+Pillow
+camera
